@@ -1,7 +1,7 @@
 #########################################################################
 # File Name: scRNA_anno.py
 # > Author: CaoYinghao
-# > Mail: caoyinghao@gmail.com 
+# > Mail: yhcao@ibms.pumc.edu.cn 
 #########################################################################
 #! /usr/bin/python
 

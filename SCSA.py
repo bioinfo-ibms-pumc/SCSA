@@ -418,7 +418,6 @@ class Annotator(object):
                 sys.exit(0)
             newexps = exps[(exps[cluster] == i) & (exps[ltitle]>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
             #print(newexps)
-            #print(newexps)
 
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
             print("Cluster " + cname + " Gene number:",newexps['gene'].unique().shape[0])
@@ -467,30 +466,7 @@ class Annotator(object):
         
         nonzero = np.matrix(np.count_nonzero(cell_matrix,axis=1)).T
         cell_deg_matrix = cell_matrix * gene_matrix
-        #print(gene_matrix)
-        #print(cell_deg_matrix)
-        #print(type(rownames))
-        #a1 = "Natural killer T (NKT) cell"
-        #b1 = "T cell"
-        #a1 = "Macrophage"
-        #b1 = "Monocyte"
-
-        #a1 = "Mesenchymal stem cell"
-        #b1 = "Fibroblast"
-        #mar = cell_matrix[np.array(rownames) == a1]
-        #mon = cell_matrix[np.array(rownames) == b1]
-        #marz = nonzero[np.array(rownames) == a1]
-        #monz = nonzero[np.array(rownames) == b1]
-        #print(len(mar[np.nonzero(mar)]),len(mon[np.nonzero(mon)]))
-
-        #print(log2(marz),log2(monz))
-
-        #print(mar)
-        #print(mon)
-        #print(marz,monz)
-        #print(cell_matrix,cell_matrix.shape,gene_matrix.shape)
-
-        #print(np.std(cell_matrix,axis=1))
+        
         #print(cell_matrix.shape,cell_deg_matrix.shape)
         wstd = np.matrix(np.std(cell_matrix,axis=1)).T
         #print(wstd.shape,nonzero.shape)
@@ -533,7 +509,6 @@ class Annotator(object):
             print(exps)
         names = newfc.index
         #print(names)
-        #print(names)
         newfc['c1'] = names
         newfc[gcol] = newfc['c1'].apply(lambda x:x[1])
         newfc[ccol] = newfc['c1'].apply(lambda x:x[0])
@@ -545,8 +520,6 @@ class Annotator(object):
         fc = newfc
         #print("hello")
         newfc.to_csv("wei.txt",sep="\t")
-        #exit()
-        #print(fc['c'][fc['c'] != 0])
 
         rownames = sorted(set(fc[ccol].unique()))
         rownum = len(rownames)
@@ -671,9 +644,7 @@ class Annotator(object):
         self.ensem_hgncs = load(handler)
         self.ensem_mouse = load(handler)
         fil = []
-        #fil = ['Cancer stem cell', 'Cancer cell']
-        #print(self.cmarkers)
-        #exit()
+
         self.cmarkers = self.cmarkers[~self.cmarkers['cellName'].isin(fil)]
 
         #if self.args.noprint == False:
@@ -694,7 +665,7 @@ class Annotator(object):
             exit(0)
 
 
-        #self.cmarkers = self.cmarkers[self.cmarkers['cellName']!="Mesenchymal stem cell"]
+
         print("load markers:",len(self.cmarkers))
         self.cmarkers = self.cmarkers[self.cmarkers['speciesType'].isin([species])]
         #print(self.cmarkers)

@@ -2,7 +2,9 @@
 Current most methods take manual strategies to annotate cell subtypes after clustering the single-cell RNA-seq data. Such methods are of limited application due to artificial judgment and specific marker genes of cell subtypes lacking or missing, which may lead to inefficient or false-positive identification. We present SCSA, which can automatic identify the cell subtypes quickly from single-cell RNA-seq data through  a novel developed score annotation model by using different expressed gene and cell markers reference information to improve efficiency and reduce the false-positives. Compared with other methods in real datasets, SCSA exhibits a significant performance at a high accuracy and efficient level.<br><br>
 SCSA is maintained by Yinghao Cao [yhcao@ibms.pumc.edu.cn].
 ## Download and Installation
-XXX
+```
+git clone https://github.com/bioinfo-ibms-pumc/SCSA.git
+```
 ## Command Lines
 
 ```  

@@ -1,0 +1,22 @@
+CD34+	THY1
+CD34+	ENG
+CD34+	KIT
+CD34+	PROM1
+Natural killer cell	NCAM1
+Natural killer cell	FCGR3A
+Monocytes	CD14
+Monocytes	FCGR1A
+Monocytes	CD68
+Monocytes	S100A12
+B cell	CD19
+B cell	MS4A1
+B cell	CD79A
+T cell	CD3D
+T cell	CD3E
+T cell	CD3G
+CD4 T cell	CD4
+CD4 T cell	FOXP3
+CD4 T cell	IL2RA
+CD4 T cell	IL7R
+CD8 T cell	CD8A
+CD8 T cell	CD8B

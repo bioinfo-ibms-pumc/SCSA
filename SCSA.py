@@ -1,7 +1,7 @@
 #########################################################################
-# File Name: SCSA.py
+# File Name: scRNA_anno.py
 # > Author: CaoYinghao
-# > Mail: yhcao@ibms.pumc.edu.cn 
+# > Mail: caoyinghao@gmail.com 
 #########################################################################
 #! /usr/bin/python
 
@@ -312,7 +312,8 @@ class Annotator(object):
                 newexps = exps[(exps[ltitle]>=self.args.weight) & (exps[ptitle] <= self.args.pvalue)]
             #print(newexps.shape)
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
-            print("Cluster " + cname + " Gene number:",newexps['gene'].unique().shape[0])
+            #print(newexps)
+            #print("Cluster " + cname + " Gene number:",newexps['Gene ID'].unique().shape[0])
             if h_values is None:
                 t,o_str,c,v,times = self.print_class(h_values,cname)
                 outs.append([cname,t,c,v,times])
@@ -347,7 +348,7 @@ class Annotator(object):
                         #print("WARNING3:Change the threshold and try again?")
                         continue
                     other_gene_names |= set(tcolnames)
-            print("Other Gene number:",len(other_gene_names))
+            #print("Other Gene number:",len(other_gene_names))
             self.deal_with_badtype(cname,other_gene_names,colnames)
         if self.args.output:
             self.wb.close()
@@ -417,6 +418,8 @@ class Annotator(object):
                 print(ltitle,"column not in the input table!")
                 sys.exit(0)
             newexps = exps[(exps[cluster] == i) & (exps[ltitle]>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
+            #newexps = exps[(exps[cluster] == i) & (abs(exps[ltitle])>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
+            #print(newexps)
             #print(newexps)
 
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
@@ -431,7 +434,10 @@ class Annotator(object):
             outs.append([cname,t,c,v,times])
             if self.args.noprint == False:
                 print(o_str)
+
             otherexps = exps[(exps[cluster] != i) & (exps[ltitle]>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
+            #otherexps = exps[(exps[cluster] != i) & (abs(exps[ltitle])>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
+
             if self.args.target.lower() == "cellmarker":
                 tfc,trownames,trownum,tcolnames,tcolnum = self.get_cell_gene_names(otherexps,self.cmarkers,fid,gcol,ccol,'other')
                 if not trownames:continue
@@ -451,7 +457,7 @@ class Annotator(object):
         return outs
 
 
-    def get_exp_matrix_loop(self,exps,ltitle,fid,colnames,rownames,cell_matrix,abs_tag = True):
+    def get_exp_matrix_loop(self,exps,ltitle,fid,colnames,rownames,cell_matrix,usertag,abs_tag = True):
         """format the cell_deg_matrix and calculate the zscore of certain cell types."""
 
         #filter gene expressed matrix according to the markers
@@ -465,16 +471,51 @@ class Annotator(object):
             return None
         
         nonzero = np.matrix(np.count_nonzero(cell_matrix,axis=1)).T
+        #gene_matrix = np.ones_like(gene_matrix)
         cell_deg_matrix = cell_matrix * gene_matrix
-        
+
+        #print("cell",cell_matrix)
+        #print("gene",gene_matrix)
+        #print(colnames)
+        #print(rownames)
+
+        #print(rownames)
+        #exit()
+        #print(gene_matrix)
+        #print(cell_deg_matrix)
+        #print(type(rownames))
+        #a1 = "Natural killer T (NKT) cell"
+        #b1 = "T cell"
+        #a1 = "Macrophage"
+        #b1 = "Monocyte"
+
+        #a1 = "Mesenchymal stem cell"
+        #b1 = "Fibroblast"
+        #mar = cell_matrix[np.array(rownames) == a1]
+        #mon = cell_matrix[np.array(rownames) == b1]
+        #marz = nonzero[np.array(rownames) == a1]
+        #monz = nonzero[np.array(rownames) == b1]
+        #print(len(mar[np.nonzero(mar)]),len(mon[np.nonzero(mon)]))
+
+        #print(log2(marz),log2(monz))
+
+        #print(mar)
+        #print(mon)
+        #print(marz,monz)
+        #print(cell_matrix,cell_matrix.shape,gene_matrix.shape)
+
+        #print(np.std(cell_matrix,axis=1))
         #print(cell_matrix.shape,cell_deg_matrix.shape)
         wstd = np.matrix(np.std(cell_matrix,axis=1)).T
         #print(wstd.shape,nonzero.shape)
-        cell_deg_matrix = np.matrix(np.array(cell_deg_matrix) * np.array(log2(nonzero)) * np.array(wstd))
+        if usertag:
+            cell_deg_matrix = np.matrix(np.array(cell_deg_matrix))
+        else:
+            cell_deg_matrix = np.matrix(np.array(cell_deg_matrix) * np.array(log2(nonzero)) * np.array(wstd))
 
         out = DataFrame({"Z-score":cell_deg_matrix.A1},index=rownames)
         out.sort_values(['Z-score'],inplace=True,ascending=False)
-        out.to_csv("wei.out",sep="\t")
+        #out.to_csv("wei.sco",sep="\t")
 
         if abs_tag:
             out['Z-score'] = abs(out['Z-score'])
@@ -492,7 +533,8 @@ class Annotator(object):
 
         fc = markers[[ccol,gcol,'weight']][whole_fil]
         #print(whole_gsets,exps[fid])
-        #print(fc,ccol,gcol)
+        #print(list(whole_fil['cellName'].unique()),ccol,gcol)
+        #exit()
         #print(markers,markers.columns)
         #print(fc)
         if fc.shape[0] == 0:
@@ -509,6 +551,7 @@ class Annotator(object):
             print(exps)
         names = newfc.index
         #print(names)
+        #print(names)
         newfc['c1'] = names
         newfc[gcol] = newfc['c1'].apply(lambda x:x[1])
         newfc[ccol] = newfc['c1'].apply(lambda x:x[0])
@@ -519,7 +562,9 @@ class Annotator(object):
         newfc['c'] = log2(newfc['c'] + 0.05) # * np.min(newfc['c'])
         fc = newfc
         #print("hello")
-        newfc.to_csv("wei.txt",sep="\t")
+        #newfc.to_csv("wei.cls",sep="\t")
+        #exit()
+        #print(fc['c'][fc['c'] != 0])
 
         rownames = sorted(set(fc[ccol].unique()))
         rownum = len(rownames)
@@ -528,17 +573,52 @@ class Annotator(object):
         #print(fc.shape)
         return fc,rownames,rownum,colnames,colnum
 
-    def get_user_cell_gene_names(self,exps,fid,gcol,ccol):
+    def get_user_cell_gene_names(self,exps,fid,gcol,ccol,tag):
         """find expressed markers according to the user markers and expressed matrix."""
-        self.usermarkers.columns = [ccol,gcol]
+        #print(self.usermarkers)
+        self.usermarkers.columns = [ccol,gcol,'weight']
         whole_gsets = set(exps[fid])
         whole_fil = self.usermarkers[gcol].isin(whole_gsets)
 
-        fc = self.usermarkers[[ccol,gcol]][whole_fil]
+        fc = self.usermarkers[[ccol,gcol,'weight']][whole_fil]
+        if fc.shape[0] == 0:
+            if tag != "other":
+                print("!WARNING3:Zero marker sets found, type:" + tag)
+                print("!WARNING3:Change the threshold or tissue name and try again?")
+            return fc,None,None,None,None
+        fc.columns = [ccol,gcol,'c']
+        fc.set_index([ccol,gcol])
+        #print("FC",fc)
+        #print("ENSG00000105369" in whole_gsets)
+
+        newfc = fc.groupby([ccol,gcol]).sum()
+        #if newfc.shape[0] <1:
+        #    print(newfc.shape)
+        #    print(fc)
+        #    print(exps)
+        names = newfc.index
+        #print(names)
+        #print(names)
+        newfc['c1'] = names
+        newfc[gcol] = newfc['c1'].apply(lambda x:x[1])
+        newfc[ccol] = newfc['c1'].apply(lambda x:x[0])
+        newfc.drop(['c1'],inplace=True,axis=1)
+        newfc.reset_index(drop=True,inplace=True)
+        #print(newfc)
+        #exit()
+        newfc['c'] = log2(newfc['c'] + 0.05) # * np.min(newfc['c'])
+        fc = newfc
+        #print("hello")
+        #newfc.to_csv("wei.cls",sep="\t")
+        #exit()
+
+
         rownames = sorted(set(self.usermarkers[ccol].unique()))
         rownum = len(rownames)
         colnames = sorted(set(fc[gcol].unique()))
         colnum = len(colnames)
+
+        #print(fc,rownames,colnames)
         #print(fc.shape)
         return fc,rownames,rownum,colnames,colnum
 
@@ -552,22 +632,43 @@ class Annotator(object):
             if self.args.norefdb:
                 cell_value,colnames =self.get_cell_matrix_detail(exps,ltitle,fid,gcol,ccol,True,abs_tag)
             else:
+                cell_value,colnames =self.get_cell_matrix_detail(exps,ltitle,fid,gcol,ccol,False,abs_tag)
                 user_value,user_colnames =self.get_cell_matrix_detail(exps,ltitle,fid,gcol,ccol,True,abs_tag)
-                cell_value = cell_value.join(user_value,how="outer",lsuffix="cm",rsuffix="ur")
-                cell_value[cell_value.isna()] = 0
-                colnames = colnames | user_colnames
+                #print("C",cell_value)
+                #print("U",user_value)
+                if cell_value is None:
+                    if user_value is None:
+                        return DataFrame(),set()
+                    else:
+                        cell_value = user_value
+                        colnames = user_colnames
+                        cell_value = cell_value.join(user_value,how="outer",lsuffix="cm",rsuffix="ur")
+                        cell_value[cell_value.isna()] = 0
+                        colnames = colnames | user_colnames
+                else:
+                    if user_value is None:
+                        user_value = cell_value
+                        user_colnames = colnames
+                    cell_value = cell_value.join(user_value,how="outer",lsuffix="cm",rsuffix="ur")
+                    cell_value[cell_value.isna()] = 0
+                    colnames = colnames | user_colnames
+
+                #else:
+                #    cell_value = user_value
+                #    colnames = user_colnames
         #database weight-matrix
         wm = [1]
         if self.args.MarkerDB != None:
             if self.args.norefdb:
                 wm = [1]
             else:
-                wm =[0.5,0.5]
+                wm =[0.1,0.9]
         weight_matrix = mat(wm).T
 
         if cell_value is None:
             return DataFrame(),set()
 
+        #print(cell_value)
         last_value = array(cell_value) * weight_matrix
         result = DataFrame({"Cell Type":cell_value.index,"Z-score":last_value.A1})
         result = result.sort_values(by="Z-score",ascending = False)
@@ -587,8 +688,9 @@ class Annotator(object):
         #print(markers)
 
         if usertag:
-            fc,rownames,rownum,colnames,colnum = self.get_user_cell_gene_names(exps,fid,gcol,ccol,'user marker')
-            fc['c'] = 1
+            fc,rownames,rownum,colnames,colnum = self.get_user_cell_gene_names(exps,fid,gcol,ccol,"user_marker")
+            #print("FC",fc)
+            #fc['c'] = 1
         else:
             fc,rownames,rownum,colnames,colnum = self.get_cell_gene_names(exps,markers,fid,gcol,ccol,'marker')
         if not colnames:
@@ -605,6 +707,11 @@ class Annotator(object):
         cell_coo_matrix = coo_matrix((newdf['c'],(newdf[ccol],newdf[gcol])),shape=(rownum,colnum))
         cell_matrix = cell_coo_matrix.toarray()
 
+        #print(newdf)
+        #print(rownames)
+        #print(colnames)
+        #print(cell_matrix)
+
         if self.args.noprint == False:
             if usertag:
                 print("User Cell Num:",rownum)
@@ -614,23 +721,25 @@ class Annotator(object):
                 print("Cell Num:",rownum)
                 print("Gene Num:",colnum)
                 print("Not Zero:",cell_coo_matrix.count_nonzero())
-        cell_values = self.get_exp_matrix_loop(exps,ltitle,fid,colnames,rownames,cell_matrix,abs_tag)
+        cell_values = self.get_exp_matrix_loop(exps,ltitle,fid,colnames,rownames,cell_matrix,usertag,abs_tag)
         return cell_values,set(colnames)
 
 
-    def read_user_markers(self):
+    def read_user_markers(self,colname):
         """usermarker db preparation"""
         if self.args.MarkerDB != None:
             if not os.path.exists(self.args.MarkerDB):
                 print("User marker database does not exists!",self.args.MarkerDB)
                 sys.exit(0)
             self.usermarkers = read_csv(self.args.MarkerDB,sep="\t",header=None)
-            self.usermarkers.columns=['cellName','gene']
+            self.usermarkers.columns=['cellName',colname]
             self.hgncs_ensem = dict(zip(self.ensem_hgncs.values(),self.ensem_hgncs.keys()))
-            self.usermarkers['gene'] = self.usermarkers['gene'].map(lambda x:self.hgncs_ensem[x] if x in self.hgncs_ensem else x)
+            if colname == "ensemblID":
+                self.usermarkers[colname] = self.usermarkers[colname].map(lambda x:self.hgncs_ensem[x] if x in self.hgncs_ensem else x)
+            self.usermarkers['weight'] = 1
             if self.args.noprint == False:
                 print("User cells:", len(self.usermarkers['cellName'].unique()))
-                print("User genes:", len(self.usermarkers['gene'].unique()))
+                print("User genes:", len(self.usermarkers[colname].unique()))
 
     def load_pickle_module(self,db):
         """read whole database"""
@@ -644,7 +753,9 @@ class Annotator(object):
         self.ensem_hgncs = load(handler)
         self.ensem_mouse = load(handler)
         fil = []
-
+        #fil = ['Cancer stem cell', 'Cancer cell']
+        #print(self.cmarkers)
+        #exit()
         self.cmarkers = self.cmarkers[~self.cmarkers['cellName'].isin(fil)]
 
         #if self.args.noprint == False:
@@ -665,7 +776,7 @@ class Annotator(object):
             exit(0)
 
 
-
+        #self.cmarkers = self.cmarkers[self.cmarkers['cellName']!="Mesenchymal stem cell"]
         print("load markers:",len(self.cmarkers))
         self.cmarkers = self.cmarkers[self.cmarkers['speciesType'].isin([species])]
         #print(self.cmarkers)
@@ -708,7 +819,10 @@ class Annotator(object):
                 self.ensem_hgncs = self.ensem_mouse
                 self.human_gofs = self.mouse_gofs
             self.read_tissues_species(self.args.tissue,self.args.species,self.args.celltype)
-            self.read_user_markers()
+            if self.args.Gensymbol:
+                self.read_user_markers('Gene ID')
+            else:
+                self.read_user_markers('ensemblID')
             outs = self.calcu_cellranger_group(self.args.input,self.args.Gensymbol)
             return outs
         elif args.source.lower() == "seurat":
@@ -717,7 +831,10 @@ class Annotator(object):
                 self.ensem_hgncs = self.ensem_mouse
                 self.human_gofs = self.mouse_gofs
             self.read_tissues_species(self.args.tissue,self.args.species,self.args.celltype)
-            self.read_user_markers()
+            if self.args.Gensymbol:
+                self.read_user_markers('gene')
+            else:
+                self.read_user_markers('ensemblID')
             outs = self.calcu_seurat_group(self.args.input,self.args.Gensymbol)
             return outs
             pass

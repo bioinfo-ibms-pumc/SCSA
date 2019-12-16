@@ -358,7 +358,7 @@ class Annotator(object):
 
     def calcu_seurat_group(self,expfile,hgvc=False):
         """deal with seurat input matrix"""
-        exps = read_csv(expfile,sep="\t")
+        exps = read_csv(expfile)
         pre,suf,suf1 ="avg_logFC"," UMI counts/cell",""
         fid = "gene"
         pname = "p_val_adj"

@@ -4,6 +4,7 @@ SCSA is maintained by Yinghao Cao [yhcao@ibms.pumc.edu.cn].
 ## Download and Installation
 ```
 git clone https://github.com/bioinfo-ibms-pumc/SCSA.git
+pip install pandas numpy scipy
 ```
 ## Command Lines
 

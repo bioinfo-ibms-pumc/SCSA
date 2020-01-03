@@ -116,8 +116,10 @@ class Annotator(object):
         """print cell predictions with scores."""
         o = ""
         titlebar = "-" * 60 + "\n"
-        if h_values is not None:
-            print(h_values.size)
+        #print(h_values)
+        #print(h_values.size)
+        #if h_values is not None:
+        #    print(h_values.size)
         if h_values is None:
             if self.args.noprint:
                 return "E",None,"-","-","-"
@@ -157,7 +159,7 @@ class Annotator(object):
             return "?",o,h_values.values[0][0],h_values.values[0][1],"-"
             pass
         elif float(h_values.iloc[0,1])/float(h_values.iloc[1,1]) >= 2 or float(h_values.iloc[1,1] < 0):
-            times = float(h_values.iloc[0,1])/float(h_values.iloc[1,1])
+            times = np.abs(float(h_values.iloc[0,1])/float(h_values.iloc[1,1]))
             if self.args.noprint:
                 return "Good",o,h_values.values[0][0],h_values.values[0][1],times
             o += titlebar
@@ -168,7 +170,7 @@ class Annotator(object):
             return "Good",o,h_values['Cell Type'].values[0],h_values['Z-score'].values[0],times
             pass
         else:
-            times = float(h_values.iloc[0,1])/float(h_values.iloc[1,1])
+            times = np.abs(float(h_values.iloc[0,1])/float(h_values.iloc[1,1]))
             if self.args.noprint:
                 return "?",o,str(h_values['Cell Type'].values[0]) + "|" + str(h_values['Cell Type'].values[1]),str(h_values['Z-score'].values[0]) + "|" + str(h_values['Z-score'].values[1]),times
             o += titlebar
@@ -313,7 +315,7 @@ class Annotator(object):
             #print(newexps.shape)
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
             #print(newexps)
-            #print("Cluster " + cname + " Gene number:",newexps['Gene ID'].unique().shape[0])
+            print("Cluster " + cname + " Gene number:",newexps['Gene ID'].unique().shape[0])
             if h_values is None:
                 t,o_str,c,v,times = self.print_class(h_values,cname)
                 outs.append([cname,t,c,v,times])
@@ -424,6 +426,8 @@ class Annotator(object):
 
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
             print("Cluster " + cname + " Gene number:",newexps['gene'].unique().shape[0])
+            #for x in newexps['gene'].unique():
+            #    print(x)
             #exit()
             if self.args.output:
                 h_values['Cluster'] = cname
@@ -507,33 +511,51 @@ class Annotator(object):
         #print(np.std(cell_matrix,axis=1))
         #print(cell_matrix.shape,cell_deg_matrix.shape)
         wstd = np.matrix(np.std(cell_matrix,axis=1)).T
-        #print(wstd.shape,nonzero.shape)
+        #print(wstd.shape,wstd,nonzero)
         if usertag:
             cell_deg_matrix = np.matrix(np.array(cell_deg_matrix))
         else:
-            cell_deg_matrix = np.matrix(np.array(cell_deg_matrix) * np.array(log2(nonzero)) * np.array(wstd))
+            if (wstd.shape == np.ones_like(wstd)).all:
+                wstd = [[1]]
+            if (nonzero == np.ones_like(nonzero)).all:
+                cell_deg_matrix = np.matrix(np.array(cell_deg_matrix) * np.array(wstd))
+            else:
+                cell_deg_matrix = np.matrix(np.array(cell_deg_matrix) * np.array(log2(nonzero)) * np.array(wstd))
 
         out = DataFrame({"Z-score":cell_deg_matrix.A1},index=rownames)
         out.sort_values(['Z-score'],inplace=True,ascending=False)
         #out.to_csv("wei.sco",sep="\t")
+        #print(cell_deg_matrix,wstd,log2(nonzero))
 
         if abs_tag:
             out['Z-score'] = abs(out['Z-score'])
         else:
             out = out[out['Z-score'] > 0]
 
-        out['Z-score'] = (out['Z-score'] - mean(out['Z-score']))/std(out['Z-score'],ddof=1)
+        #print(out)
+        if (out.shape[0] > 1):
+            out['Z-score'] = (out['Z-score'] - mean(out['Z-score']))/std(out['Z-score'],ddof=1)
+        #print(out)
+
         return out
 
 
     def get_cell_gene_names(self,exps,markers,fid,gcol,ccol,tag):
         """find expressed markers according to the markers and expressed matrix."""
         whole_gsets = set(exps[fid])
+        if self.args.target.lower() == "cancersea":
+            #whole_fil = markers['EnsembleID'].isin(whole_gsets)
+            markers['weight'] = 1
+            if self.args.Gensymbol == True:
+                markers[gcol] = markers['GeneName']
+            else:
+                markers[gcol] = markers['EnsembleID']
         whole_fil = markers[gcol].isin(whole_gsets)
 
         fc = markers[[ccol,gcol,'weight']][whole_fil]
         #print(whole_gsets,exps[fid])
         #print(list(whole_fil['cellName'].unique()),ccol,gcol)
+        #print(whole_fil.unique())
         #exit()
         #print(markers,markers.columns)
         #print(fc)
@@ -672,8 +694,8 @@ class Annotator(object):
         last_value = array(cell_value) * weight_matrix
         result = DataFrame({"Cell Type":cell_value.index,"Z-score":last_value.A1})
         result = result.sort_values(by="Z-score",ascending = False)
-        if self.args.target == "cancersea":
-            result['note'] = result['Cell Type'].apply(lambda x: self.snames[x])
+        #if self.args.target == "cancersea":
+        #    result['note'] = result['Cell Type'].apply(lambda x: self.snames[x])
         return result,set(colnames)
 
     def get_cell_matrix_detail(self,exps,ltitle,fid,gcol,ccol,usertag,abs_tag):
@@ -722,6 +744,7 @@ class Annotator(object):
                 print("Gene Num:",colnum)
                 print("Not Zero:",cell_coo_matrix.count_nonzero())
         cell_values = self.get_exp_matrix_loop(exps,ltitle,fid,colnames,rownames,cell_matrix,usertag,abs_tag)
+        #print(cell_values)
         return cell_values,set(colnames)
 
 
@@ -733,7 +756,7 @@ class Annotator(object):
                 sys.exit(0)
             self.usermarkers = read_csv(self.args.MarkerDB,sep="\t",header=None)
             self.usermarkers.columns=['cellName',colname]
-            self.hgncs_ensem = dict(zip(self.ensem_hgncs.values(),self.ensem_hgncs.keys()))
+            #self.hgncs_ensem = dict(zip(self.ensem_hgncs.values(),self.ensem_hgncs.keys()))
             if colname == "ensemblID":
                 self.usermarkers[colname] = self.usermarkers[colname].map(lambda x:self.hgncs_ensem[x] if x in self.hgncs_ensem else x)
             self.usermarkers['weight'] = 1
@@ -752,6 +775,7 @@ class Annotator(object):
         self.snames = load(handler)
         self.ensem_hgncs = load(handler)
         self.ensem_mouse = load(handler)
+        self.hgncs_ensem = dict(zip(self.ensem_hgncs.values(),self.ensem_hgncs.keys()))
         fil = []
         #fil = ['Cancer stem cell', 'Cancer cell']
         #print(self.cmarkers)

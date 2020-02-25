@@ -156,7 +156,7 @@ class Annotator(object):
             o += "\n" + "-"*60 + "\n"
             o += "{0:<10}{1:^30}{2:<10.4f}".format("Good",h_values.values[0][0],h_values.values[0][1])
             o += "\n" + titlebar
-            return "?",o,h_values.values[0][0],h_values.values[0][1],"-"
+            return "Good",o,h_values.values[0][0],h_values.values[0][1],"-"
             pass
         elif float(h_values.iloc[0,1])/float(h_values.iloc[1,1]) >= 2 or float(h_values.iloc[1,1] < 0):
             times = np.abs(float(h_values.iloc[0,1])/float(h_values.iloc[1,1]))

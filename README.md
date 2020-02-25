@@ -92,14 +92,16 @@ The output information from stdout consists of five parts: "#Cluster","Type","Ce
 “#Cluster” : the cluster id from input file.
 ```
 ```
-“Type” : A subjective symbol for the predictio results.
+“Type” : A subjective symbol for the prediction results.
 
    “Good” means one of the following conditions:
        1.Only one celltype found
-       2.The score of the first predicted celltype is more than twice as much as the second predicted celltype.
+       2.The score of the first predicted celltype is more than twice as much 
+         as the second predicted celltype.
        3.The score of the second predicted celltype is a minus.
 
-   “?” means the score of the first predicted celltype is less than twice as much as the second predicted celltype.
+   “?” means the score of the first predicted celltype is less than twice as much
+       as the second predicted celltype.
 
    “E” means no celltype found.
 ```
@@ -107,7 +109,8 @@ The output information from stdout consists of five parts: "#Cluster","Type","Ce
 “Celltype”: The predicted celltype name.
 ```
 ```
-“Score” : The predicted score for a celltype normalized by Z-score method. “nan” will be assigned if only one celltype found. 
+“Score” : The predicted score for a celltype normalized by Z-score method. 
+          “nan” will be assigned if only one celltype found. 
 ```
 ```
 “Times” : The score of the first predicted celltype / The score of the second predicted celltype

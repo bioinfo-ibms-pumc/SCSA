@@ -426,6 +426,7 @@ class Annotator(object):
 
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
             print("Cluster " + cname + " Gene number:",newexps['gene'].unique().shape[0])
+            #print(colnames)
             #for x in newexps['gene'].unique():
             #    print(x)
             #exit()
@@ -563,7 +564,8 @@ class Annotator(object):
             if tag != "other":
                 print("!WARNING3:Zero marker sets found, type:" + tag)
                 print("!WARNING3:Change the threshold or tissue name and try again?")
-            return fc,None,None,None,None
+            return fc,None,None,whole_gsets,None
+        #print("helll")
         fc.columns = [ccol,gcol,'c']
         fc.set_index([ccol,gcol])
         newfc = fc.groupby([ccol,gcol]).sum()
@@ -607,7 +609,7 @@ class Annotator(object):
             if tag != "other":
                 print("!WARNING3:Zero marker sets found, type:" + tag)
                 print("!WARNING3:Change the threshold or tissue name and try again?")
-            return fc,None,None,None,None
+            return fc,None,None,whole_gsets,None
         fc.columns = [ccol,gcol,'c']
         fc.set_index([ccol,gcol])
         #print("FC",fc)
@@ -660,7 +662,7 @@ class Annotator(object):
                 #print("U",user_value)
                 if cell_value is None:
                     if user_value is None:
-                        return DataFrame(),set()
+                        return DataFrame(),set(colnames)
                     else:
                         cell_value = user_value
                         colnames = user_colnames
@@ -688,7 +690,7 @@ class Annotator(object):
         weight_matrix = mat(wm).T
 
         if cell_value is None:
-            return DataFrame(),set()
+            return DataFrame(),set(colnames)
 
         #print(cell_value)
         last_value = array(cell_value) * weight_matrix
@@ -715,6 +717,8 @@ class Annotator(object):
             #fc['c'] = 1
         else:
             fc,rownames,rownum,colnames,colnum = self.get_cell_gene_names(exps,markers,fid,gcol,ccol,'marker')
+            #print(colnames)
+
         if not colnames:
             return None,None
 

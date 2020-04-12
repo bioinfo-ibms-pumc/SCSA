@@ -118,6 +118,7 @@ The output information from stdout consists of five parts: "#Cluster","Type","Ce
 ---
 
 If you use SCSA for your research, please kindly cite the following paper:
+
 "SCSA: a cell type annotation tool for single-cell RNA-seq data"
 Yinghao Cao, Xiaoyue Wang, Gongxin Peng
 bioRxiv 2019.12.22.886481; doi: [https://doi.org/10.1101/2019.12.22.886481](https://doi.org/10.1101/2019.12.22.886481)

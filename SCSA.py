@@ -189,6 +189,10 @@ class Annotator(object):
         if len(self.human_gofs) != 0:
             fset = set()
             bset = set()
+            if colnames is None:
+                print("!WARNING(go processing):Zero gene sets found for the cluster",cname)
+                print("!WARNING(go processing):Change the threshold and try again?")
+                return 
             for c in colnames:
                 if c in self.ensem_hgncs:
                     fset.add(self.ensem_hgncs[c])
@@ -692,7 +696,7 @@ class Annotator(object):
         whole_fil = markers[gcol].isin(whole_gsets)
 
         fc = markers[[ccol,gcol,'weight']][whole_fil]
-        #print(whole_gsets,exps[fid])
+        #print(whole_gsets,exps[fid],exps)
         #print(markers[gcol])
         #print(fc)
         #print(list(fc['cellName'].unique()),ccol,gcol)
@@ -831,6 +835,9 @@ class Annotator(object):
             else:
                 wm =[0.1,0.9]
         weight_matrix = mat(wm).T
+
+        if colnames is None:
+            return DataFrame(),None
 
         if cell_value is None:
             return DataFrame(),set(colnames)

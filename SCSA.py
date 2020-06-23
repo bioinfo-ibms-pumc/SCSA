@@ -370,7 +370,7 @@ class Annotator(object):
         pre,suf,suf1 ="avg_logFC"," UMI counts/cell",""
         fid = "gene"
         pname = "p_val_adj"
-        assert fid in exps.columns, 'No "gene" column. Wrong format? Seurat, Scanpy or Cellranger?'
+        assert fid in exps.columns, 'No "gene" column. Wrong format? Seurat, Scanpy, Scran or Cellranger?'
         exps[fid] = exps[fid].str.replace("\.\d+","")
         cluster = "cluster"
         gcol = "gene" if hgvc == True else "ensemblID"
@@ -602,6 +602,144 @@ class Annotator(object):
         if self.args.noprint == False:
             print("#"*80 + "\n")
         return outs
+
+    def calcu_scran_group(self,expfile,hgvc=False):
+        """deal with scran input matrix"""
+        exps = read_csv(expfile)
+        if exps.columns[0] == "Unnamed: 0":
+            exps.rename(columns={"Unnamed: 0":"gene"},inplace=True)
+        cnum = set()
+        pname = "p.value"
+        pre = "l"
+        fid = "gene"
+        for c in exps.columns:
+            if c.startswith("p"):
+                pname = c
+            elif c.startswith("logFC"):
+                k,v = c.split(".")
+                pre = k
+                cnum.add(v)
+        
+        #pre,suf,suf1 ="avg_logFC"," UMI counts/cell",""
+        #fid = "gene"
+        #pname = "p_val_adj"
+        #assert fid in exps.columns, 'No "gene" column. Wrong format? Scanpy, Seurat or Cellranger?'
+        #exps[fid] = exps[fid].str.replace("\.\d+","")
+        #cluster = "cluster"
+
+        ###MarkerBase
+        gcol = "gene" if hgvc == True else "ensemblID"
+        ccol = "cellName"
+
+        if self.args.target.lower() not in ["cancersea","cellmarker"]:
+            print("Error target : -t, --target,(cellmarker,[cancersea])")
+            sys.exit(0)
+
+        if self.args.target.lower() == "cancersea":
+            gcol = "gene" if hgvc == True else "ensemblID"
+            ccol = "name"
+
+        #cnum = list(exps[cluster].unique())
+        abs_tag = True
+        outs = []
+        self.wb = self.wbgo = None
+        if self.args.output:
+            if self.args.outfmt.lower() == "ms-excel":
+                if not self.args.output.endswith(".xlsx") and (not self.args.output.endswith(".xls")):
+                    self.args.output += ".xlsx"
+                self.wb = ExcelWriter(self.args.output)
+                self.wbgo = self.wb
+            elif self.args.outfmt.lower() == "txt":
+                self.wb = open(self.args.output,"w")
+                if self.args.target == "cancersea":
+                    self.wb.write("Cell Type\tZ-score\tNote\tCluster\n")
+                else:
+                    self.wb.write("Cell Type\tZ-score\tCluster\n")
+                self.wbgo = open(self.args.output + ".go","w")
+                self.wbgo.write('ids\tgene_num\tothergene_num\tp-value\tq-value\tsig\tname\tcluster\tgo_class\n')
+            else:
+                print("Error output format: -m, -outfmt,(ms-excel,[txt])")
+                sys.exit(0)
+
+        for i in list(sorted(cnum)):
+            cname = str(i)
+            if self.args.cluster != "all":
+                if self.args.cluster.find(",") > -1:
+                    sets = self.args.cluster.split(",")
+                    if cname not in sets:
+                        continue
+                else:
+                    if cname != self.args.cluster:
+                        continue
+            o = " ".join(["#"*30,"Cluster",cname, "#"*30]) + "\n"
+            if self.args.noprint == False:
+                print(o)
+            ltitle = pre + "." + cname
+            ptitle = pname
+            if ltitle not in exps.columns:
+                print(ltitle,"column not in the input table!")
+                sys.exit(0)
+            newexps = exps[[fid,ltitle,ptitle]][(exps[ltitle]>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
+            #newexps = exps[(exps[cluster] == i) & (abs(exps[ltitle])>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
+            #print(newexps)
+            #print(newexps)
+            #exit()
+
+            h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
+            print("Cluster " + cname + " Gene number:",newexps[fid].unique().shape[0])
+            #print(colnames)
+            #for x in newexps[fid].unique():
+            #    print(x)
+            #exit()
+            if self.args.output:
+                h_values['Cluster'] = cname
+                Annotator.to_output(h_values,self.wb,self.args.outfmt,cname,"Cell Type")
+
+            #print(h_values)
+            #exit()
+            t,o_str,c,v,times = self.print_class(h_values,cname)
+            outs.append([cname,t,c,v,times])
+            if self.args.noprint == False:
+                print(o_str)
+
+            otherexps = None
+            ofid = 'o_n'
+            oltitle = 'o_l'
+            optitle = 'o_p'
+            for j in list(sorted(cnum)):
+                oname = str(j)
+                if oname == cname:continue
+                tltitle = pre + "." + oname
+                tfid = fid
+                tptitle = pname
+                tempexps = exps[[tfid,tltitle,tptitle]][(exps[tltitle]>=self.args.foldchange) & (exps[tptitle] <= self.args.pvalue)]
+                tempexps.columns = [ofid,oltitle,optitle]
+                if otherexps is None:
+                    otherexps = tempexps
+                else:
+                    otherexps = pd.concat([otherexps,tempexps])
+            #otherexps = exps[(exps[cluster] != i) & (abs(exps[ltitle])>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
+            #print(otherexps)
+            #exit()
+
+            if self.args.target.lower() == "cellmarker":
+                tfc,trownames,trownum,tcolnames,tcolnum = self.get_cell_gene_names(otherexps,self.cmarkers,ofid,gcol,ccol,'other')
+                if not trownames:continue
+                other_gene_names = set(tcolnames)
+                self.deal_with_badtype(cname,other_gene_names,colnames)
+            elif self.args.target.lower() == "cancersea":
+                tfc,trownames,trownum,tcolnames,tcolnum = self.get_cell_gene_names(otherexps,self.smarkers,ofid,gcol,ccol,'other')
+                if not trownames:continue
+                other_gene_names = set(tcolnames)
+                self.deal_with_badtype(cname,other_gene_names,colnames)
+            print("Other Gene number:",len(other_gene_names))
+        if self.args.output:
+            self.wb.close()
+            self.wbgo.close()
+        if self.args.noprint == False:
+            print("#"*80 + "\n")
+        return outs
+
 
     def get_exp_matrix_loop(self,exps,ltitle,fid,colnames,rownames,cell_matrix,usertag,abs_tag = True):
         """format the cell_deg_matrix and calculate the zscore of certain cell types."""
@@ -1030,6 +1168,18 @@ class Annotator(object):
                 self.read_user_markers('ensemblID')
             outs = self.calcu_scanpy_group(self.args.input,self.args.Gensymbol)
             return outs
+        elif args.source.lower() == "scran":
+            self.load_pickle_module(self.args.db)
+            if self.args.species == "Mouse":
+                self.ensem_hgncs = self.ensem_mouse
+                self.human_gofs = self.mouse_gofs
+            self.read_tissues_species(self.args.tissue,self.args.species,self.args.celltype)
+            if self.args.Gensymbol:
+                self.read_user_markers('gene')
+            else:
+                self.read_user_markers('ensemblID')
+            outs = self.calcu_scran_group(self.args.input,self.args.Gensymbol)
+            return outs
             pass
 
 
@@ -1049,7 +1199,7 @@ class Process(object):
         parser.add_argument('-i', '--input', required = True, help="Input file for marker annotation.")
         parser.add_argument('-o', '--output', help="Output file for marker annotation.")
         parser.add_argument('-d', '--db', default = "whole.db",help="Database for annotation. (whole.db)")
-        parser.add_argument('-s', '--source', default = "cellranger",help="Source of marker genes. (cellranger,[seurat],[scanpy])")
+        parser.add_argument('-s', '--source', default = "cellranger",help="Source of marker genes. (cellranger,[seurat],[scanpy],[scran])")
         parser.add_argument('-c', '--cluster', default = "all",help="Only deal with one cluster of marker genes. (all,[1],[1,2,3],[...])")
         parser.add_argument('-M', '--MarkerDB', help='User-defined marker database in table format with two columns.First column as Cellname, Second refers to Genename.')
         parser.add_argument('-f',"--foldchange",default = 2,help="Fold change threshold for marker filtering. (2.0)")

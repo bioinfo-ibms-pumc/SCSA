@@ -1075,6 +1075,7 @@ class Annotator(object):
         self.cmarkers = self.cmarkers[~self.cmarkers['cellName'].isin(fil)]
 
         #if self.args.noprint == False:
+        print("Version V1.1 [2020/07/03]")
         print("DB load:",len(self.gos),len(self.human_gofs),len(self.mouse_gofs),len(self.cmarkers),len(self.ensem_hgncs))
 
     def read_tissues_species(self,tissue="All",species="Human",celltype="normal"):

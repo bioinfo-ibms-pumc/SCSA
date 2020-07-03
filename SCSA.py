@@ -610,14 +610,11 @@ class Annotator(object):
             exps.rename(columns={"Unnamed: 0":"gene"},inplace=True)
         cnum = set()
         pname = "p.value"
-        pre = "l"
+        pre = "LFC"
         fid = "gene"
         for c in exps.columns:
-            if c.startswith("p"):
-                pname = c
-            elif c.startswith("logFC"):
-                k,v = c.split(".")
-                pre = k
+            if c.startswith("LFC"):
+                k,v = c.split("_")
                 cnum.add(v)
         
         #pre,suf,suf1 ="avg_logFC"," UMI counts/cell",""
@@ -674,8 +671,8 @@ class Annotator(object):
             o = " ".join(["#"*30,"Cluster",cname, "#"*30]) + "\n"
             if self.args.noprint == False:
                 print(o)
-            ltitle = pre + "." + cname
-            ptitle = pname
+            ltitle = pre + "_" + cname
+            ptitle = pname + "_" + cname
             if ltitle not in exps.columns:
                 print(ltitle,"column not in the input table!")
                 sys.exit(0)
@@ -683,7 +680,7 @@ class Annotator(object):
             #newexps = exps[(exps[cluster] == i) & (abs(exps[ltitle])>=self.args.foldchange) & (exps[ptitle] <= self.args.pvalue)]
             #print(newexps)
             #print(newexps)
-            #exit()
+            #continue
 
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
             print("Cluster " + cname + " Gene number:",newexps[fid].unique().shape[0])
@@ -709,9 +706,9 @@ class Annotator(object):
             for j in list(sorted(cnum)):
                 oname = str(j)
                 if oname == cname:continue
-                tltitle = pre + "." + oname
-                tfid = fid
-                tptitle = pname
+                tltitle = pre + "_" + oname
+                tfid = fid 
+                tptitle = pname + "_" + oname
                 tempexps = exps[[tfid,tltitle,tptitle]][(exps[tltitle]>=self.args.foldchange) & (exps[tptitle] <= self.args.pvalue)]
                 tempexps.columns = [ofid,oltitle,optitle]
                 if otherexps is None:

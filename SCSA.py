@@ -1083,7 +1083,11 @@ class Annotator(object):
         species = species.lower().capitalize()
         ct = celltype.lower().capitalize()
         if tissue != "All":
-            self.cmarkers = self.cmarkers[self.cmarkers['tissueType'].isin([tissue])]
+            if tissue.find(",") > -1:
+                temptis = set(tissue.split(","))
+                self.cmarkers = self.cmarkers[self.cmarkers['tissueType'].isin(temptis)]
+            else:
+                self.cmarkers = self.cmarkers[self.cmarkers['tissueType'].isin([tissue])]
         if ct == "Normal":
             self.cmarkers = self.cmarkers[self.cmarkers['cellType']=="Normal cell"]
         elif ct == "Cancer":
@@ -1204,7 +1208,7 @@ class Process(object):
         parser.add_argument('-p',"--pvalue",default = 0.05,help="P-value threshold for marker filtering. (0.05)")
         parser.add_argument('-w',"--weight",default = 100,help="Weight threshold for marker filtering from cellranger v1.0 results. (100)")
         parser.add_argument('-g',"--species",default = 'Human',help="Species for annotation. Only used for cellmarker database. ('Human',['Mouse'])")
-        parser.add_argument('-k',"--tissue",default = 'All',help="Tissue for annotation. Only used for cellmarker database. Run '-l' option to see all tissues. ('All',[...])")
+        parser.add_argument('-k',"--tissue",default = 'All',help="Tissue for annotation. Only used for cellmarker database. Multiple tissues should be seperated by commas. Run '-l' option to see all tissues. ('All',['Bone marrow'],['Bone marrow,Brain,Blood'][...])")
         parser.add_argument('-m', '--outfmt', default = "ms-excel", help="Output file format for marker annotation. (ms-excel,[txt])")
         parser.add_argument('-T',"--celltype",default = "normal",help="Cell type for annotation. (normal,[cancer])")
         parser.add_argument('-t', '--target', default = "cellmarker",help="Target to annotation class in Database. (cellmarker,[cancersea])")
@@ -1218,7 +1222,14 @@ class Process(object):
         args.foldchange = float(args.foldchange)
         args.weight = float(args.weight)
         args.pvalue = float(args.pvalue)
-        args.tissue = str.capitalize(args.tissue)
+        if args.tissue.find(",") > -1:
+            tissues = args.tissue
+            temptis  = []
+            for tis in tissues.split(","):
+                temptis.append(str.capitalize(tis))
+            args.tissue = ",".join(temptis)
+        else:
+            args.tissue = str.capitalize(args.tissue)
         args.species = str.capitalize(args.species)
         if args.species == "Mouse" and args.target == "cancersea":
             print("Error target database for mouse genome. Cancersea can't used on mouse genomes. Please use cellmarker database instead.")

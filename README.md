@@ -44,8 +44,9 @@ optional arguments:
                         database. ('Human',['Mouse'])
   -k TISSUE, --tissue TISSUE
                         Tissue for annotation. Only used for cellmarker
-                        database. Run '-l' option to see all tissues.
-                        ('All',[...])
+                        database. Multiple tissues should be seperated 
+                        by commas.Run '-l' option to see all tissues.
+                        ('All',['Bone marrow'],['Bone marrow,Brain,Blood'][...])
   -m OUTFMT, --outfmt OUTFMT
                         Output file format for marker annotation. (ms-
                         excel,[txt])

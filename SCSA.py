@@ -320,7 +320,7 @@ class Annotator(object):
             #print(newexps.shape)
             h_values,colnames = self.get_cell_matrix(newexps,ltitle,fid,gcol,ccol,abs_tag)
             #print(newexps)
-            print("Cluster " + cname + " Gene number:",newexps['Gene ID'].unique().shape[0])
+            print("Cluster " + cname + " Gene number:",newexps[fid].unique().shape[0])
             if h_values is None:
                 t,o_str,c,v,times = self.print_class(h_values,cname)
                 outs.append([cname,t,c,v,times])
@@ -748,6 +748,10 @@ class Annotator(object):
         gene_matrix = gene_matrix * np.mean(gene_matrix) ### / np.min(gene_matrix))
 
         if gene_matrix.shape[0] != cell_matrix.shape[1]:
+            #print(gene_matrix.shape,cell_matrix.shape)
+            #print(len(gene_exps[fid].unique()))
+            #print(gene_matrix)
+            #print(cell_matrix)
             print("Error for inconsistent gene numbers, please check your expression csv for '" + fid + "'")
             return None
         
@@ -944,7 +948,10 @@ class Annotator(object):
                 #print("U",user_value)
                 if cell_value is None:
                     if user_value is None:
-                        return DataFrame(),set(colnames)
+                        if colnames is None:
+                            return DataFrame(),None
+                        else:
+                            return DataFrame(),set(colnames)
                     else:
                         cell_value = user_value
                         colnames = user_colnames

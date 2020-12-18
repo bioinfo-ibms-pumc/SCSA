@@ -18,7 +18,8 @@ SCSA.py [-h] -i INPUT [-o OUTPUT] [-d DB] [-s SOURCE] [-c CLUSTER]
 optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
-                        Input file for marker annotation.
+                        Input file for marker annotation(Only
+                        CSV format supported).
   -o OUTPUT, --output OUTPUT
                         Output file for marker annotation.
   -d DB, --db DB        Database for annotation. (whole.db)

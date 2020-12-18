@@ -1205,7 +1205,7 @@ class Process(object):
         parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=desc)
                                          #usage=usage)
 
-        parser.add_argument('-i', '--input', required = True, help="Input file for marker annotation.")
+        parser.add_argument('-i', '--input', required = True, help="Input file for marker annotation(Only CSV format supported).")
         parser.add_argument('-o', '--output', help="Output file for marker annotation.")
         parser.add_argument('-d', '--db', default = "whole.db",help="Database for annotation. (whole.db)")
         parser.add_argument('-s', '--source', default = "cellranger",help="Source of marker genes. (cellranger,[seurat],[scanpy],[scran])")

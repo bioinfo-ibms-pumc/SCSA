@@ -47,7 +47,8 @@ optional arguments:
                         Tissue for annotation. Only used for cellmarker
                         database. Multiple tissues should be seperated 
                         by commas.Run '-l' option to see all tissues.
-                        ('All',['Bone marrow'],['Bone marrow,Brain,Blood'][...])
+                        In linux platform:('All',['Bone marrow'],['Bone marrow,Brain,Blood'][...])
+                        In windows platform:("All",["Bone marrow"],["Bone marrow,Brain,Blood"][...])
   -m OUTFMT, --outfmt OUTFMT
                         Output file format for marker annotation. (ms-
                         excel,[txt])

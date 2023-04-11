@@ -4,6 +4,7 @@ SCSA is maintained by Yinghao Cao [yhcao@ibms.pumc.edu.cn].
 Any suggestion is welcome.
 
 ## Update list
+Date: 2024/4/12
 1. CellMarker database v2 was integrated，the number of marker evidence increased from 48257 to 91969. User can use this version with cmd '-d whole_v2.db' instead.
 ##
 

@@ -11,7 +11,7 @@ Any suggestion is welcome.
 ## Download and Installation
 ```
 git clone https://github.com/bioinfo-ibms-pumc/SCSA.git
-pip install pandas numpy scipy
+pip install pandas numpy scipy openpyxl
 ```
 ## Command Lines
 

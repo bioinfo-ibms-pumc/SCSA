@@ -2,6 +2,11 @@
 Currently most methods take manual strategies to annotate cell types after clustering the single-cell RNA-seq data. Such methods are labor-intensive and heavily rely on user expertise, which may lead to inconsistent results. We present SCSA, an automatic tool to annotate cell types from single-cell RNA-seq data, based on a score annotation model combining differentially expressed genes and confidence levels of cell markers in databases. Evaluation on real scRNA-seq datasets that SCSA is able to assign the cells into the correct types at a fully automated mode with a desirable precision.<br><br>
 SCSA is maintained by Yinghao Cao [yhcao@ibms.pumc.edu.cn]. 
 Any suggestion is welcome.
+
+## Update list
+1. CellMarker database v2 was integrated，the number of marker evidence increased from 48257 to 91969. User can use this version with cmd '-d whole_v2.db' instead.
+##
+
 ## Download and Installation
 ```
 git clone https://github.com/bioinfo-ibms-pumc/SCSA.git
